@@ -2,7 +2,10 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Ülke Tahmin</title>
+    <title>Ülke Tahmin | Coğrafya Bilgi Yarışması</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ülke Tahmin ile coğrafi bilginizi test edin! Nüfus, alan ve kıta ipuçlarını kullanarak hedef ülkeyi bulun.">
+    
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         h1 { color: #f8fafc; margin-bottom: 30px; }
@@ -11,14 +14,12 @@
         .suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: #1e293b; border: 2px solid #3b82f6; border-radius: 0 0 12px 12px; z-index: 10; display: none; }
         .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #334155; font-weight: bold; }
         .suggestion-item:hover { background-color: #3b82f6; }
-
         .guess-card { border: 2px solid #333; border-radius: 15px; padding: 15px; margin: 10px auto; background: #fff; width: 450px; color: #000; }
         .guess-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
         .box { border: 2px solid #333; border-radius: 10px; padding: 10px; text-align: center; font-weight: bold; font-size: 13px; }
         .match-c { background-color: #9cdb9c !important; } 
         .mismatch-c { background-color: #ff8a8a !important; }
         .neutral-c { background-color: #f0f0f0 !important; }
-        
         .win-msg { font-size: 24px; font-weight: bold; color: #50fa7b; margin: 20px; display: none; }
         .reset-btn { margin-top: 10px; padding: 12px 25px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; }
     </style>
@@ -35,71 +36,89 @@
     <button id="resetBtn" class="reset-btn" onclick="location.reload()">Yeniden Oyna</button>
     <div id="gameGrid"></div>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDqz82thko2eiOut-yLmb2NhOktnsdUdk",
+            authDomain: "ulketahmin.firebaseapp.com",
+            projectId: "ulketahmin",
+            storageBucket: "ulketahmin.firebasestorage.app",
+            messagingSenderId: "365356269470",
+            appId: "1:365356269470:web:c1a11af53820342f8c208f",
+            measurementId: "G-1GQM3MFNJH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+    </script>
+
+    <!-- Oyun Mantığı -->
     <script>
-    let countryDB = [], target, guessCount = 0;
-    const input = document.getElementById('countryInput');
-    const suggestionsBox = document.getElementById('suggestions');
+        let countryDB = [], target, guessCount = 0;
+        const input = document.getElementById('countryInput');
+        const suggestionsBox = document.getElementById('suggestions');
 
-    fetch('countries.json')
-        .then(res => res.json())
-        .then(data => { countryDB = data; target = countryDB[Math.floor(Math.random() * countryDB.length)]; });
+        fetch('countries.json')
+            .then(res => res.json())
+            .then(data => { countryDB = data; target = countryDB[Math.floor(Math.random() * countryDB.length)]; });
 
-    input.addEventListener('input', function() {
-        const val = this.value.toLocaleLowerCase('tr-TR').trim();
-        if (!val) { suggestionsBox.style.display = 'none'; return; }
-        const matches = countryDB.filter(c => c.ad.toLocaleLowerCase('tr-TR').startsWith(val) || c.ad_en.toLocaleLowerCase('tr-TR').startsWith(val));
-        suggestionsBox.innerHTML = '';
-        matches.forEach(match => {
-            const div = document.createElement('div');
-            div.className = 'suggestion-item';
-            div.textContent = match.ad;
-            div.onclick = () => { input.value = match.ad; submitGuess(); };
-            suggestionsBox.appendChild(div);
+        input.addEventListener('input', function() {
+            const val = this.value.toLocaleLowerCase('tr-TR').trim();
+            if (!val) { suggestionsBox.style.display = 'none'; return; }
+            const matches = countryDB.filter(c => c.ad.toLocaleLowerCase('tr-TR').startsWith(val) || c.ad_en.toLocaleLowerCase('tr-TR').startsWith(val));
+            suggestionsBox.innerHTML = '';
+            matches.forEach(match => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = match.ad;
+                div.onclick = () => { input.value = match.ad; submitGuess(); };
+                suggestionsBox.appendChild(div);
+            });
+            suggestionsBox.style.display = matches.length ? 'block' : 'none';
         });
-        suggestionsBox.style.display = matches.length ? 'block' : 'none';
-    });
 
-    function submitGuess() {
-        const val = input.value.toLocaleLowerCase('tr-TR').trim();
-        const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === val || c.ad_en.toLocaleLowerCase('tr-TR') === val);
-        if (!guess) return;
+        function submitGuess() {
+            const val = input.value.toLocaleLowerCase('tr-TR').trim();
+            const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === val || c.ad_en.toLocaleLowerCase('tr-TR') === val);
+            if (!guess) return;
 
-        guessCount++;
-        const isNeighbor = guess.komsular.includes(target.ad);
-        const card = document.createElement('div');
-        card.className = 'guess-card';
-        
-        const popArr = guess.nufus < target.nufus ? "⬆️" : (guess.nufus > target.nufus ? "⬇️" : "✔️");
-        const areaArr = guess.alan < target.alan ? "⬆️" : (guess.alan > target.alan ? "⬇️" : "✔️");
+            guessCount++;
+            const isNeighbor = guess.komsular.includes(target.ad);
+            const card = document.createElement('div');
+            card.className = 'guess-card';
+            
+            const popArr = guess.nufus < target.nufus ? "⬆️" : (guess.nufus > target.nufus ? "⬇️" : "✔️");
+            const areaArr = guess.alan < target.alan ? "⬆️" : (guess.alan > target.alan ? "⬇️" : "✔️");
 
-        card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="https://flagcdn.com/24x18/${guess.kod.toLowerCase()}.png">
-                    <span style="font-weight:bold;">${guess.ad}</span>
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="https://flagcdn.com/24x18/${guess.kod.toLowerCase()}.png">
+                        <span style="font-weight:bold;">${guess.ad}</span>
+                    </div>
+                    <span>#${guessCount}</span>
                 </div>
-                <span>#${guessCount}</span>
-            </div>
-            <div class="guess-grid">
-                <div class="box ${guess.kita === target.kita ? 'match-c' : 'mismatch-c'}">Kıta<br>${guess.kita === target.kita ? '✔️' : '✕'} ${guess.kita}</div>
-                <div class="box ${guess.kiyi === target.kiyi ? 'match-c' : 'mismatch-c'}">Kıyı<br>${guess.kiyi === target.kiyi ? '✔️' : '✕'} ${guess.kiyi}</div>
-                <div class="box ${(guess.ad === target.ad || isNeighbor) ? 'match-c' : 'mismatch-c'}">Komşu<br>${(guess.ad === target.ad || isNeighbor) ? '✔️' : '✕'} ${isNeighbor ? 'EVET' : 'HAYIR'}</div>
-                <div class="box neutral-c">Nüfus<br><span style="font-size:16px;">${popArr}</span> ${guess.nufus} Mn</div>
-                <div class="box neutral-c">Arazi Alanı<br><span style="font-size:16px;">${areaArr}</span> ${guess.alan}k km²</div>
-            </div>
-        `;
-        document.getElementById('gameGrid').prepend(card);
+                <div class="guess-grid">
+                    <div class="box ${guess.kita === target.kita ? 'match-c' : 'mismatch-c'}">Kıta<br>${guess.kita === target.kita ? '✔️' : '✕'} ${guess.kita}</div>
+                    <div class="box ${guess.kiyi === target.kiyi ? 'match-c' : 'mismatch-c'}">Kıyı<br>${guess.kiyi === target.kiyi ? '✔️' : '✕'} ${guess.kiyi}</div>
+                    <div class="box ${(guess.ad === target.ad || isNeighbor) ? 'match-c' : 'mismatch-c'}">Komşu<br>${(guess.ad === target.ad || isNeighbor) ? '✔️' : '✕'} ${isNeighbor ? 'EVET' : 'HAYIR'}</div>
+                    <div class="box neutral-c">Nüfus<br><span style="font-size:16px;">${popArr}</span> ${guess.nufus} Mn</div>
+                    <div class="box neutral-c">Arazi Alanı<br><span style="font-size:16px;">${areaArr}</span> ${guess.alan}k km²</div>
+                </div>
+            `;
+            document.getElementById('gameGrid').prepend(card);
 
-        // Oyun Bitiş Mantığı
-        if (guess.ad === target.ad) {
-            input.style.display = "none"; // Arama kutusunu gizle
-            document.getElementById('winDisplay').style.display = "block"; // Tebrik yazısı
-            document.getElementById('resetBtn').style.display = "block"; // Yeniden oyna butonu
+            if (guess.ad === target.ad) {
+                input.style.display = "none";
+                document.getElementById('winDisplay').style.display = "block";
+                document.getElementById('resetBtn').style.display = "block";
+            }
+            input.value = ''; suggestionsBox.style.display = 'none';
         }
-        
-        input.value = ''; suggestionsBox.style.display = 'none';
-    }
-    input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
+        input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
     </script>
 </body>
 </html>
