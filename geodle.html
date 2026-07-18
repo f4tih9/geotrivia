@@ -60,15 +60,22 @@
         suggestionsBox.innerHTML = '';
         if (!val) { suggestionsBox.style.display = 'none'; return; }
 
-        const matches = countryDB.filter(c => c.ad.toLocaleLowerCase('tr-TR').startsWith(val));
+        // Türkçe veya İngilizce ile başlayanları bul
+        const matches = countryDB.filter(c => 
+            c.ad.toLocaleLowerCase('tr-TR').startsWith(val) || 
+            c.ad_en.toLocaleLowerCase('tr-TR').startsWith(val)
+        );
+
         matches.forEach(match => {
             const div = document.createElement('div');
             div.className = 'suggestion-item';
-            div.textContent = match.ad;
+            // Öneride hem Türkçe hem İngilizce yazması daha iyi olabilir
+            div.textContent = `${match.ad} (${match.ad_en})`;
             div.onclick = () => { input.value = match.ad; submitGuess(); };
             suggestionsBox.appendChild(div);
         });
         suggestionsBox.style.display = matches.length ? 'block' : 'none';
+    });
     });
 
     function submitGuess() {
