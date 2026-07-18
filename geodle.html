@@ -73,7 +73,12 @@
 
     function submitGuess() {
         const searchValue = input.value.toLocaleLowerCase('tr-TR').trim();
-        const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === searchValue);
+        
+        // Hem Türkçe (ad) hem İngilizce (ad_en) isimleri kontrol et
+        const guess = countryDB.find(c => 
+            c.ad.toLocaleLowerCase('tr-TR') === searchValue || 
+            c.ad_en.toLocaleLowerCase('tr-TR') === searchValue
+        );
 
         if (!guess) {
             input.classList.add('error-shake'); 
