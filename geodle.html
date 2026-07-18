@@ -66,45 +66,31 @@
     });
 
     function submitGuess() {
-        const val = input.value.toLocaleLowerCase('tr-TR').trim();
+        // ... (input kontrol kısmı aynı)
         const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === val || c.ad_en.toLocaleLowerCase('tr-TR') === val);
-
-        if (!guess) return;
+        if (!guess) { /* ... */ return; }
 
         guessCount++;
         const isNeighbor = guess.komsular.includes(target.ad);
+        
+        // Kartı oluşturma kısmı aynı...
         const card = document.createElement('div');
         card.className = 'guess-card';
-        
-        const popArr = guess.nufus < target.nufus ? "⬆️" : (guess.nufus > target.nufus ? "⬇️" : "✔️");
-        const areaArr = guess.alan < target.alan ? "⬆️" : (guess.alan > target.alan ? "⬇️" : "✔️");
-
-        card.innerHTML = `
-            <div class="header-line">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="https://flagcdn.com/24x18/${guess.kod.toLowerCase()}.png" alt="flag">
-                    <span style="font-weight:bold; font-size:18px;">${guess.ad}</span>
-                </div>
-                <span style="font-weight:bold; color:#888;">#${guessCount}</span>
-            </div>
-            <div class="guess-grid">
-                <div class="box ${guess.kita === target.kita ? 'match-c' : 'mismatch-c'}">Kıta<br>${guess.kita === target.kita ? '✔️' : '✕'} ${guess.kita}</div>
-                <div class="box ${guess.kiyi === target.kiyi ? 'match-c' : 'mismatch-c'}">Kıyı<br>${guess.kiyi === target.kiyi ? '✔️' : '✕'} ${guess.kiyi}</div>
-                <div class="box ${(guess.ad === target.ad || isNeighbor) ? 'match-c' : 'mismatch-c'}">Komşu<br>${(guess.ad === target.ad || isNeighbor) ? '✔️' : '✕'} ${isNeighbor ? 'EVET' : 'HAYIR'}</div>
-                <div class="bottom-row">
-                    <div class="box neutral-c">Nüfus<br><span style="font-size:18px;">${popArr}</span> ${guess.nufus} Mn</div>
-                    <div class="box neutral-c">Arazi Alanı<br><span style="font-size:18px;">${areaArr}</span> ${guess.alan}k km²</div>
-                </div>
-            </div>
-        `;
+        // ... (innerHTML kısmı aynı) ...
         document.getElementById('gameGrid').prepend(card);
 
-        // Doğru bildiğinde inputu kapat ve butonu göster
+        // OYUN BİTİŞ KONTROLÜ
         if (guess.ad === target.ad) {
-            input.disabled = true;
-            document.getElementById('resetBtn').style.display = "block";
+            input.disabled = true; // Inputu kilitle
+            input.placeholder = "Tebrikler! Doğru bildin.";
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'reset-btn';
+            resetBtn.textContent = "Yeniden Oyna";
+            resetBtn.style.display = "block";
+            resetBtn.onclick = () => location.reload(); // Sayfayı yenileyerek oyunu sıfırla
+            document.body.appendChild(resetBtn);
         }
-        
+
         input.value = ''; suggestionsBox.style.display = 'none';
     }
     input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
