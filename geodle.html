@@ -69,12 +69,18 @@
         const val = input.value.toLocaleLowerCase('tr-TR').trim();
         const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === val || c.ad_en.toLocaleLowerCase('tr-TR') === val);
 
-        if (!guess) return;
+        if (!guess) { 
+            input.classList.add('error-shake'); 
+            setTimeout(() => input.classList.remove('error-shake'), 400); 
+            return; 
+        }
 
+        // Tahmin kutularının temiz görünmesi için burada bir düzenleme yapalım
         guessCount++;
         const isNeighbor = guess.komsular.includes(target.ad);
         const card = document.createElement('div');
         card.className = 'guess-card';
+        card.style.background = "#fff"; // Arka planın beyaz olduğundan emin olalım
         
         const popArr = guess.nufus < target.nufus ? "⬆️" : (guess.nufus > target.nufus ? "⬇️" : "✔️");
         const areaArr = guess.alan < target.alan ? "⬆️" : (guess.alan > target.alan ? "⬇️" : "✔️");
@@ -99,14 +105,16 @@
         `;
         document.getElementById('gameGrid').prepend(card);
 
-        // Doğru bildiğinde oyun bitiş ekranı
+        // OYUN BİTTİĞİNDE GÖSTERİLECEK MESAJ
         if (guess.ad === target.ad) {
             input.disabled = true;
-            document.getElementById('congratsMsg').style.display = "block"; // Tebrik yazısını göster
-            document.getElementById('resetBtn').style.display = "block"; // Butonu göster
+            input.value = "Tebrikler! Doğru bildin.";
+            document.getElementById('resetBtn').style.display = "block";
+        } else {
+            input.value = ''; // Yanlışsa temizle
         }
         
-        input.value = ''; suggestionsBox.style.display = 'none';
+        suggestionsBox.style.display = 'none';
     }
     input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
     </script>
