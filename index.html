@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Ülke Tahmin | Coğrafya Bilgi Yarışması</title>
-    <meta name="description" content="Ülke Tahmin ile coğrafi bilginizi test edin!">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f6f3ea; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .navbar { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
@@ -21,7 +19,7 @@
 
     <div class="navbar">
         <div class="logo">🌍 Ülke Tahmin</div>
-        <button class="profile-btn" onclick="openProfile()">Profil</button>
+        <button class="profile-btn" onclick="document.getElementById('profileModal').style.display = 'flex'">Profil</button>
     </div>
 
     <div class="container">
@@ -34,37 +32,32 @@
             <h3>Profilim</h3>
             <button id="googleBtn" style="padding:10px 20px; background:#4285F4; color:white; border:none; border-radius:5px; cursor:pointer;">Google ile Giriş Yap</button>
             <br><br>
-            <button onclick="closeProfile()">Kapat</button>
+            <button onclick="document.getElementById('profileModal').style.display = 'none'">Kapat</button>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
-    apiKey: "AIzaSyDDqz82thko2eiOut-yLmb2NhOktnsdUdk",
-    authDomain: "ulketahmin.firebaseapp.com",
-    projectId: "ulketahmin",
-    storageBucket: "ulketahmin.firebasestorage.app",
-    messagingSenderId: "365356269470",
-    appId: "1:365356269470:web:c1a11af53820342f8c208f",
-    measurementId: "G-1GQM3MFNJH"
-};
+            apiKey: "AIzaSyDDqz82thko2eiOut-yLmb2NhOktnsdUdk",
+            authDomain: "ulketahmin.firebaseapp.com",
+            projectId: "ulketahmin",
+            storageBucket: "ulketahmin.firebasestorage.app",
+            messagingSenderId: "365356269470",
+            appId: "1:365356269470:web:c1a11af53820342f8c208f"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        window.openProfile = () => document.getElementById('profileModal').style.display = 'flex';
-        window.closeProfile = () => document.getElementById('profileModal').style.display = 'none';
-
         document.getElementById('googleBtn').onclick = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 alert("Hoş geldin, " + result.user.displayName);
-                closeProfile();
+                document.getElementById('profileModal').style.display = 'none';
             } catch (error) {
                 alert("Hata: " + error.message);
             }
