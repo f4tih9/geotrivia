@@ -4,20 +4,30 @@
     <meta charset="UTF-8">
     <title>Ülke Tahmin | Coğrafya Bilgi Yarışması</title>
     
-    <!-- SEO Kodlarını Buraya Yapıştır -->
-    <meta name="description" content="Ülke Tahmin ile coğrafi bilginizi test edin! Haritalar, ülkeler ve daha fazlası. Ücretsiz coğrafya oyunları burada.">
-    <meta name="keywords" content="ülke tahmin, coğrafya oyunu, harita bilgisi, ücretsiz oyunlar, bilgi yarışması">
+    <!-- SEO Meta Etiketleri -->
+    <meta name="description" content="Ülke Tahmin ile coğrafi bilginizi test edin! Nüfus, alan ve kıta ipuçlarını kullanarak hedef ülkeyi bulun.">
+    <meta name="keywords" content="ülke tahmin, coğrafya oyunu, harita bilgisi, geodle, bilgi yarışması">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="Ülke Tahmin - Günlük Coğrafya Oyunları">
-    <meta property="og:description" content="Coğrafya bilginize güveniyor musunuz? Hemen oynamaya başlayın!">
     
     <style>
-        /* CSS kodların burada kalmaya devam edecek */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f6f3ea; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        /* ... diğer CSS kodların ... */
+        .navbar { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logo { font-size: 24px; font-weight: bold; cursor: pointer; }
+        .profile-btn { border: 2px solid #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; background: white; }
+        .container { width: 100%; max-width: 1200px; padding: 40px; }
+        h2 { margin-bottom: 30px; }
+        .game-card { border: 3px solid #000; padding: 30px; background: #50fa7b; border-radius: 18px; font-size: 24px; font-weight: bold; cursor: pointer; display: inline-block; box-shadow: 5px 5px 0 #000; text-decoration: none; color: #000; transition: transform 0.2s; }
+        .game-card:hover { transform: scale(1.02); }
     </style>
 </head>
 <body>
-    <!-- ... body içeriğin ... -->
+    <div class="navbar">
+        <div class="logo">🌍 Ülke Tahmin</div>
+        <button class="profile-btn">Profil</button>
+    </div>
+    <div class="container">
+        <h2>Günlük Oyunlar</h2>
+        <a href="geodle.html" class="game-card">🟩 Ülke Tahmin</a>
+    </div>
 </body>
 </html>
