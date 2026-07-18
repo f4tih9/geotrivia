@@ -4,63 +4,23 @@
     <meta charset="UTF-8">
     <title>Ülke Tahmin</title>
     <style>
-        /* Koyu Arka Plan Teması */
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: #0f172a; 
-            color: #f8fafc; 
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: #f8fafc; margin-bottom: 30px; }
+        .controls { width: 100%; max-width: 450px; position: relative; }
+        #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: #1e293b; color: white; font-size: 16px; box-sizing: border-box; }
+        .suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: #1e293b; border: 2px solid #3b82f6; border-radius: 0 0 12px 12px; z-index: 10; display: none; }
+        .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #334155; font-weight: bold; }
+        .suggestion-item:hover { background-color: #3b82f6; }
 
-        h1 { color: #f8fafc; }
-
-        /* Arama Kutusu Ortalandı */
-        .controls { 
-            width: 100%; 
-            max-width: 450px; 
-            margin: 20px 0; 
-            position: relative; 
-        }
-        #countryInput { 
-            width: 100%; 
-            padding: 15px; 
-            border: 2px solid #3b82f6; 
-            border-radius: 12px; 
-            background: #1e293b; 
-            color: white; 
-            font-size: 16px; 
-        }
-        .suggestions-box { 
-            position: absolute; 
-            top: 100%; 
-            left: 0; 
-            width: 100%; 
-            background: #1e293b; 
-            border: 2px solid #3b82f6; 
-            border-radius: 0 0 12px 12px; 
-            z-index: 10; 
-        }
-
-        /* Kart Stilleri */
-        .guess-card { 
-            border: 2px solid #333; 
-            border-radius: 15px; 
-            padding: 15px; 
-            margin: 10px auto; 
-            background: #fff; 
-            width: 450px; 
-            color: #000; 
-        }
+        .guess-card { border: 2px solid #333; border-radius: 15px; padding: 15px; margin: 10px auto; background: #fff; width: 450px; color: #000; }
         .guess-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
         .box { border: 2px solid #333; border-radius: 10px; padding: 10px; text-align: center; font-weight: bold; font-size: 13px; }
         .match-c { background-color: #9cdb9c !important; } 
         .mismatch-c { background-color: #ff8a8a !important; }
         .neutral-c { background-color: #f0f0f0 !important; }
-        .reset-btn { margin-top: 20px; padding: 15px 30px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; display: none; }
+        
+        .win-msg { font-size: 24px; font-weight: bold; color: #50fa7b; margin: 20px; display: none; }
+        .reset-btn { margin-top: 10px; padding: 12px 25px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; }
     </style>
 </head>
 <body>
@@ -71,8 +31,9 @@
         <div id="suggestions" class="suggestions-box"></div>
     </div>
     
-    <div id="gameGrid"></div>
+    <div id="winDisplay" class="win-msg">Tebrikler, Bildin!</div>
     <button id="resetBtn" class="reset-btn" onclick="location.reload()">Yeniden Oyna</button>
+    <div id="gameGrid"></div>
 
     <script>
     let countryDB = [], target, guessCount = 0;
@@ -85,9 +46,9 @@
 
     input.addEventListener('input', function() {
         const val = this.value.toLocaleLowerCase('tr-TR').trim();
-        suggestionsBox.innerHTML = '';
         if (!val) { suggestionsBox.style.display = 'none'; return; }
         const matches = countryDB.filter(c => c.ad.toLocaleLowerCase('tr-TR').startsWith(val) || c.ad_en.toLocaleLowerCase('tr-TR').startsWith(val));
+        suggestionsBox.innerHTML = '';
         matches.forEach(match => {
             const div = document.createElement('div');
             div.className = 'suggestion-item';
@@ -129,14 +90,14 @@
         `;
         document.getElementById('gameGrid').prepend(card);
 
+        // Oyun Bitiş Mantığı
         if (guess.ad === target.ad) {
-            input.disabled = true;
-            input.value = "Tebrikler! Doğru bildin.";
-            document.getElementById('resetBtn').style.display = "block";
-        } else {
-            input.value = '';
+            input.style.display = "none"; // Arama kutusunu gizle
+            document.getElementById('winDisplay').style.display = "block"; // Tebrik yazısı
+            document.getElementById('resetBtn').style.display = "block"; // Yeniden oyna butonu
         }
-        suggestionsBox.style.display = 'none';
+        
+        input.value = ''; suggestionsBox.style.display = 'none';
     }
     input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
     </script>
