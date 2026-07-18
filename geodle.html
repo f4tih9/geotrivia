@@ -58,20 +58,19 @@
     });
 
     function submitGuess() {
-        const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === input.value.toLocaleLowerCase('tr-TR').trim() || c.ad_en.toLocaleLowerCase('tr-TR') === input.value.toLocaleLowerCase('tr-TR').trim());
-        if (!guess) return;
+        const val = input.value.toLocaleLowerCase('tr-TR').trim();
+        const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === val || c.ad_en.toLocaleLowerCase('tr-TR') === val);
+
+        if (!guess) { input.classList.add('error-shake'); setTimeout(() => input.classList.remove('error-shake'), 400); return; }
 
         guessCount++;
         const isNeighbor = guess.komsular.includes(target.ad);
         const card = document.createElement('div');
         card.className = 'guess-card';
         
-        // Ok ve Sembol mantığı
-        const popDir = guess.nufus < target.nufus ? "⬆️" : (guess.nufus > target.nufus ? "⬇️" : "✓");
-        const areaDir = guess.alan < target.alan ? "⬆️" : (guess.alan > target.alan ? "⬇️" : "✓");
-        const borderSym = guess.kiyi === target.kiyi ? "✓" : "✕";
-        const neighSym = (guess.ad === target.ad || isNeighbor) ? "✓" : "✕";
-        const kitaSym = guess.kita === target.kita ? "✓" : "✕";
+        // Ok mantığı: Hedef küçükse (guess > target) aşağı ok (⬇️), büyükse yukarı (⬆️), eşitse tik (✔️)
+        const popArr = guess.nufus < target.nufus ? "⬆️" : (guess.nufus > target.nufus ? "⬇️" : "✔️");
+        const areaArr = guess.alan < target.alan ? "⬆️" : (guess.alan > target.alan ? "⬇️" : "✔️");
 
         card.innerHTML = `
             <div class="header-line">
@@ -82,12 +81,12 @@
                 <span style="font-weight:bold; color:#888;">#${guessCount}</span>
             </div>
             <div class="guess-grid">
-                <div class="box ${guess.kita === target.kita ? 'match-c' : 'mismatch-c'}">Kıta<br>${kitaSym} ${guess.kita}</div>
-                <div class="box ${guess.kiyi === target.kiyi ? 'match-c' : 'mismatch-c'}">Kıyı<br>${borderSym} ${guess.kiyi}</div>
-                <div class="box ${(guess.ad === target.ad || isNeighbor) ? 'match-c' : 'mismatch-c'}">Komşu<br>${neighSym} ${isNeighbor ? 'EVET' : 'HAYIR'}</div>
+                <div class="box ${guess.kita === target.kita ? 'match-c' : 'mismatch-c'}">Kıta<br>${guess.kita === target.kita ? '✔️' : '✕'} ${guess.kita}</div>
+                <div class="box ${guess.kiyi === target.kiyi ? 'match-c' : 'mismatch-c'}">Kıyı<br>${guess.kiyi === target.kiyi ? '✔️' : '✕'} ${guess.kiyi}</div>
+                <div class="box ${(guess.ad === target.ad || isNeighbor) ? 'match-c' : 'mismatch-c'}">Komşu<br>${(guess.ad === target.ad || isNeighbor) ? '✔️' : '✕'} ${isNeighbor ? 'EVET' : 'HAYIR'}</div>
                 <div class="bottom-row">
-                    <div class="box neutral-c">Nüfus<br>${popDir} ${guess.nufus} Mn</div>
-                    <div class="box neutral-c">Alan<br>${areaDir} ${guess.alan}k km²</div>
+                    <div class="box neutral-c">Nüfus<br><span style="font-size:18px;">${popArr}</span> ${guess.nufus} Mn</div>
+                    <div class="box neutral-c">Arazi Alanı<br><span style="font-size:18px;">${areaArr}</span> ${guess.alan}k km²</div>
                 </div>
             </div>
         `;
