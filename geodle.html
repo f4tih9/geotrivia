@@ -2,37 +2,30 @@
 <html lang="tr" class="dark-mode">
 <head>
     <meta charset="UTF-8">
-    <title>Ülketahmin</title>
+    <title>Ülke Tahmin</title>
     <style>
         :root { --bg: #0f172a; --text: #f8fafc; --cell: #1e293b; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* Başlık stili */
         h1 { margin-bottom: 20px; }
-
         .controls { width: 100%; max-width: 450px; margin-bottom: 40px; position: relative; }
         #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: var(--cell); color: white; font-size: 16px; outline: none; box-sizing: border-box; }
-        
         .suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: var(--cell); border: 2px solid #3b82f6; border-radius: 0 0 12px 12px; max-height: 250px; overflow-y: auto; z-index: 10; display: none; }
         .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #334155; font-weight: bold; color: white; }
         .suggestion-item:hover { background-color: #3b82f6; }
-
         .guess-card { border: 2px solid #333; border-radius: 15px; padding: 15px; margin: 10px auto; background: #fff; width: 450px; color: #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .guess-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
         .box { border: 2px solid #333; border-radius: 10px; padding: 10px; text-align: center; font-weight: bold; font-size: 13px; }
         .bottom-row { grid-column: span 3; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        
         .match-c { background-color: #9cdb9c !important; } 
         .mismatch-c { background-color: #ff8a8a !important; }
         .neutral-c { background-color: #f0f0f0 !important; }
-
-        @keyframes shake { 0%, 100% {transform: translateX(0)} 25% {transform: translateX(-8px)} 75% {transform: translateX(8px)} }
         .error-shake { animation: shake 0.4s; border-color: #dc2626 !important; background-color: #451a23 !important; }
+        @keyframes shake { 0%, 100% {transform: translateX(0)} 25% {transform: translateX(-8px)} 75% {transform: translateX(8px)} }
     </style>
 </head>
 <body>
 
-    <h1>Ülketahmin</h1>
+    <h1>Ülke Tahmin</h1>
 
     <div class="controls">
         <input type="text" id="countryInput" placeholder="Bir ülke yazın..." autocomplete="off">
@@ -49,53 +42,32 @@
 
     fetch('countries.json')
         .then(response => response.json())
-        .then(data => {
-            countryDB = data;
-            target = countryDB[Math.floor(Math.random() * countryDB.length)];
-            console.log("Hedef ülke:", target.ad);
-        });
+        .then(data => { countryDB = data; target = countryDB[Math.floor(Math.random() * countryDB.length)]; });
 
     input.addEventListener('input', function() {
         const val = this.value.toLocaleLowerCase('tr-TR').trim();
         suggestionsBox.innerHTML = '';
         if (!val) { suggestionsBox.style.display = 'none'; return; }
-
-        // Türkçe veya İngilizce ile başlayanları bul
-        const matches = countryDB.filter(c => 
-            c.ad.toLocaleLowerCase('tr-TR').startsWith(val) || 
-            c.ad_en.toLocaleLowerCase('tr-TR').startsWith(val)
-        );
-
+        const matches = countryDB.filter(c => c.ad.toLocaleLowerCase('tr-TR').startsWith(val) || c.ad_en.toLocaleLowerCase('tr-TR').startsWith(val));
         matches.forEach(match => {
             const div = document.createElement('div');
             div.className = 'suggestion-item';
-            // Öneride hem Türkçe hem İngilizce yazması daha iyi olabilir
             div.textContent = `${match.ad} (${match.ad_en})`;
             div.onclick = () => { input.value = match.ad; submitGuess(); };
             suggestionsBox.appendChild(div);
         });
         suggestionsBox.style.display = matches.length ? 'block' : 'none';
     });
-    });
 
     function submitGuess() {
-        const searchValue = input.value.toLocaleLowerCase('tr-TR').trim();
-        
-        // Hem Türkçe (ad) hem İngilizce (ad_en) isimleri kontrol et
-        const guess = countryDB.find(c => 
-            c.ad.toLocaleLowerCase('tr-TR') === searchValue || 
-            c.ad_en.toLocaleLowerCase('tr-TR') === searchValue
-        );
+        const val = input.value.toLocaleLowerCase('tr-TR').trim();
+        // Türkçe veya İngilizce isim ile eşleştirme
+        const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === val || c.ad_en.toLocaleLowerCase('tr-TR') === val);
 
-        if (!guess) {
-            input.classList.add('error-shake'); 
-            setTimeout(() => input.classList.remove('error-shake'), 400);
-            return; 
-        }
+        if (!guess) { input.classList.add('error-shake'); setTimeout(() => input.classList.remove('error-shake'), 400); return; }
 
         const grid = document.getElementById('gameGrid');
         const isNeighbor = guess.komsular.includes(target.ad);
-
         const card = document.createElement('div');
         card.className = 'guess-card';
         card.innerHTML = `
@@ -110,7 +82,6 @@
                 </div>
             </div>
         `;
-        
         grid.prepend(card);
         input.value = '';
         suggestionsBox.style.display = 'none';
