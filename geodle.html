@@ -4,83 +4,39 @@
     <meta charset="UTF-8">
     <title>Geodle - Pro</title>
     <style>
-        :root { --bg: #0f172a; --text: #f8fafc; --cell: #1e293b; --header: #334155; }
+        :root { --bg: #0f172a; --text: #f8fafc; --cell: #1e293b; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 40px; display: flex; flex-direction: column; align-items: center; }
         
-        /* Arama Kutusu Stili */
         .controls { width: 100%; max-width: 450px; margin-bottom: 40px; position: relative; }
-        #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: var(--cell); color: white; font-size: 16px; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+        #countryInput { width: 100%; padding: 15px; border: 2px solid #3b82f6; border-radius: 12px; background: var(--cell); color: white; font-size: 16px; outline: none; box-sizing: border-box; }
         
-        /* Öneri Kutusu (Autocomplete) Stili */
-        .suggestions-box {
-            position: absolute;
-            top: 100%; 
-            left: 0;
-            width: 100%;
-            background: var(--cell);
-            border: 2px solid #3b82f6;
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 10;
-            display: none; /* Varsayılan olarak gizli */
-            box-sizing: border-box;
-        }
-        
-        /* Öneri Liste Elemanları */
-        .suggestion-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            color: white;
-            border-bottom: 1px solid #334155;
-            font-weight: bold;
-        }
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        .suggestion-item:hover {
-            background-color: #3b82f6;
-        }
+        .suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: var(--cell); border: 2px solid #3b82f6; border-radius: 0 0 12px 12px; max-height: 250px; overflow-y: auto; z-index: 10; display: none; }
+        .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #334155; font-weight: bold; color: white; }
+        .suggestion-item:hover { background-color: #3b82f6; }
 
-        .grid-layout { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 100%; max-width: 900px; }
-        .header-cell { background-color: var(--header); padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; }
-        .cell { padding: 15px; background: #334155; border-radius: 8px; text-align: center; font-weight: bold; }
+        /* Yeni 3+2 Tasarım Stilleri */
+        .guess-card { border: 2px solid #333; border-radius: 15px; padding: 15px; margin: 10px auto; background: #fff; width: 450px; color: #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .guess-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .box { border: 2px solid #333; border-radius: 10px; padding: 10px; text-align: center; font-weight: bold; font-size: 13px; }
+        .bottom-row { grid-column: span 3; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         
-        .match { background-color: #059669 !important; }
-        .mismatch { background-color: #dc2626 !important; }
+        .match-c { background-color: #9cdb9c !important; } 
+        .mismatch-c { background-color: #ff8a8a !important; }
+        .neutral-c { background-color: #f0f0f0 !important; }
 
-        /* Hatalı Giriş Titreme Animasyonu */
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            50% { transform: translateX(8px); }
-            75% { transform: translateX(-8px); }
-            100% { transform: translateX(0); }
-        }
-        
-        .error-shake {
-            animation: shake 0.4s ease-in-out;
-            border-color: #dc2626 !important;
-            background-color: #451a23 !important;
-        }
+        @keyframes shake { 0%, 100% {transform: translateX(0)} 25% {transform: translateX(-8px)} 75% {transform: translateX(8px)} }
+        .error-shake { animation: shake 0.4s; border-color: #dc2626 !important; background-color: #451a23 !important; }
     </style>
 </head>
 <body>
 
     <div class="controls">
         <input type="text" id="countryInput" placeholder="Ülke adı yaz..." autocomplete="off">
-        <div id="suggestions" class="suggestions-box"></div> <!-- Öneri kutusu buraya eklendi -->
+        <div id="suggestions" class="suggestions-box"></div>
     </div>
     
-    <div class="grid-layout" id="gameGrid">
-        <div class="header-cell">Ülke</div>
-        <div class="header-cell">Kıta</div>
-        <div class="header-cell">Nüfus</div>
-        <div class="header-cell">Alan</div>
-        <div class="header-cell">Kıyı</div>
-        <div class="header-cell">Komşu</div>
-    </div>
+    <!-- 3. adım burası: Eski grid-layout'u ve içindeki her şeyi sildik, sadece id verdik -->
+    <div id="gameGrid"></div>
 
     <script>
     let countryDB = [];
@@ -93,52 +49,24 @@
         .then(data => {
             countryDB = data;
             target = countryDB[Math.floor(Math.random() * countryDB.length)];
-            console.log("Hedef ülke seçildi:", target.ad);
-        })
-        .catch(error => console.error('Hata:', error));
+            console.log("Hedef:", target.ad);
+        });
 
-    // --- YENİ: Otomatik Tamamlama (Autocomplete) İşlevi ---
     input.addEventListener('input', function() {
         const val = this.value.toLocaleLowerCase('tr-TR').trim();
-        suggestionsBox.innerHTML = ''; // Önceki önerileri temizle
+        suggestionsBox.innerHTML = '';
+        if (!val) { suggestionsBox.style.display = 'none'; return; }
 
-        // Kutu boşsa listeyi gizle
-        if (!val) {
-            suggestionsBox.style.display = 'none'; 
-            return;
-        }
-
-        // Yazılan harflerle başlayan ülkeleri bul
         const matches = countryDB.filter(c => c.ad.toLocaleLowerCase('tr-TR').startsWith(val));
-
-        if (matches.length > 0) {
-            matches.forEach(match => {
-                const div = document.createElement('div');
-                div.className = 'suggestion-item';
-                div.textContent = match.ad;
-                
-                // Öneriye tıklanınca inputa yazdır ve otomatik olarak arat (Enter'a basmış gibi)
-                div.onclick = function() {
-                    input.value = match.ad;
-                    suggestionsBox.style.display = 'none';
-                    submitGuess(); 
-                };
-                
-                suggestionsBox.appendChild(div);
-            });
-            suggestionsBox.style.display = 'block'; // Listeyi göster
-        } else {
-            suggestionsBox.style.display = 'none'; // Eşleşme yoksa listeyi gizle
-        }
+        matches.forEach(match => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.textContent = match.ad;
+            div.onclick = () => { input.value = match.ad; submitGuess(); };
+            suggestionsBox.appendChild(div);
+        });
+        suggestionsBox.style.display = matches.length ? 'block' : 'none';
     });
-
-    // Herhangi bir yere (dışarı) tıklanınca öneriler listesini kapat
-    document.addEventListener('click', function(e) {
-        if (e.target !== input && e.target !== suggestionsBox) {
-            suggestionsBox.style.display = 'none';
-        }
-    });
-    // --------------------------------------------------------
 
     function submitGuess() {
         const searchValue = input.value.toLocaleLowerCase('tr-TR').trim();
@@ -146,43 +74,31 @@
 
         if (!guess) {
             input.classList.add('error-shake'); 
-            setTimeout(() => {
-                input.classList.remove('error-shake');
-            }, 400);
+            setTimeout(() => input.classList.remove('error-shake'), 400);
             return; 
         }
 
         const grid = document.getElementById('gameGrid');
-        const isSame = (guess.ad === target.ad);
         const isNeighbor = guess.komsular.includes(target.ad);
 
-        const data = [
-            guess.ad,
-            guess.kita,
-            guess.nufus + (guess.nufus < target.nufus ? " Mn ⬆️" : (guess.nufus > target.nufus ? " Mn ⬇️" : " Mn")),
-            guess.alan + (guess.alan < target.alan ? " km² ⬆️" : (guess.alan > target.alan ? " km² ⬇️" : " km²")),
-            guess.kiyi,
-            isSame ? "Kendisi" : (isNeighbor ? "Evet" : "Hayır")
-        ];
-
-        data.forEach((val, i) => {
-            const div = document.createElement('div');
-            div.className = 'cell';
-            let correct = false;
-            
-            if (i === 0) correct = isSame;
-            else if (i === 1) correct = (guess.kita === target.kita);
-            else if (i === 4) correct = (guess.kiyi === target.kiyi);
-            else if (i === 5) correct = (isSame || isNeighbor);
-            else if (i === 2 || i === 3) correct = !val.includes("⬆️") && !val.includes("⬇️");
-
-            div.classList.add(correct ? "match" : "mismatch");
-            div.textContent = val;
-            grid.appendChild(div);
-        });
+        const card = document.createElement('div');
+        card.className = 'guess-card';
+        card.innerHTML = `
+            <div style="font-weight:bold; font-size:18px;">${guess.ad}</div>
+            <div class="guess-grid">
+                <div class="box ${guess.kita === target.kita ? 'match-c' : 'mismatch-c'}">Kıta<br>${guess.kita}</div>
+                <div class="box ${guess.kiyi === target.kiyi ? 'match-c' : 'mismatch-c'}">Kıyı<br>${guess.kiyi}</div>
+                <div class="box ${(guess.ad === target.ad || isNeighbor) ? 'match-c' : 'mismatch-c'}">Komşu<br>${isNeighbor ? 'EVET' : 'HAYIR'}</div>
+                <div class="bottom-row">
+                    <div class="box neutral-c">Nüfus<br>${guess.nufus} Mn</div>
+                    <div class="box neutral-c">Alan<br>${guess.alan}k km²</div>
+                </div>
+            </div>
+        `;
         
+        grid.prepend(card);
         input.value = '';
-        suggestionsBox.style.display = 'none'; // Başarılı tahminden sonra kutuyu kapat
+        suggestionsBox.style.display = 'none';
     }
 
     input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
