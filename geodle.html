@@ -22,6 +22,13 @@
         .match-c { background-color: #9cdb9c !important; } 
         .mismatch-c { background-color: #ff8a8a !important; }
         .neutral-c { background-color: #f0f0f0 !important; }
+
+        /* Buton Stili - STYLE ETİKETİNİN İÇİNE ALINDI */
+        .reset-btn { 
+            margin-top: 20px; padding: 15px 30px; background: #3b82f6; color: white; 
+            border: none; border-radius: 10px; font-weight: bold; cursor: pointer; 
+            font-size: 16px; display: none; 
+        }
     </style>
 </head>
 <body>
@@ -32,6 +39,7 @@
         <div id="suggestions" class="suggestions-box"></div>
     </div>
     <div id="gameGrid"></div>
+    <button id="resetBtn" class="reset-btn" onclick="location.reload()">Yeniden Oyna</button>
 
     <script>
     let countryDB = [], target, guessCount = 0;
@@ -61,14 +69,13 @@
         const val = input.value.toLocaleLowerCase('tr-TR').trim();
         const guess = countryDB.find(c => c.ad.toLocaleLowerCase('tr-TR') === val || c.ad_en.toLocaleLowerCase('tr-TR') === val);
 
-        if (!guess) { input.classList.add('error-shake'); setTimeout(() => input.classList.remove('error-shake'), 400); return; }
+        if (!guess) return;
 
         guessCount++;
         const isNeighbor = guess.komsular.includes(target.ad);
         const card = document.createElement('div');
         card.className = 'guess-card';
         
-        // Ok mantığı: Hedef küçükse (guess > target) aşağı ok (⬇️), büyükse yukarı (⬆️), eşitse tik (✔️)
         const popArr = guess.nufus < target.nufus ? "⬆️" : (guess.nufus > target.nufus ? "⬇️" : "✔️");
         const areaArr = guess.alan < target.alan ? "⬆️" : (guess.alan > target.alan ? "⬇️" : "✔️");
 
@@ -91,6 +98,13 @@
             </div>
         `;
         document.getElementById('gameGrid').prepend(card);
+
+        // Doğru bildiğinde inputu kapat ve butonu göster
+        if (guess.ad === target.ad) {
+            input.disabled = true;
+            document.getElementById('resetBtn').style.display = "block";
+        }
+        
         input.value = ''; suggestionsBox.style.display = 'none';
     }
     input.onkeydown = (e) => { if(e.key === 'Enter') submitGuess(); };
