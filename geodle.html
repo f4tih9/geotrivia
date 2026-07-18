@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="tr" class="dark-mode">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Geodle - Pro</title>
+    <title>Ülketahmin - Pro</title>
     <style>
         :root { --bg: #0f172a; --text: #f8fafc; --cell: #1e293b; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 40px; display: flex; flex-direction: column; align-items: center; }
@@ -14,7 +14,7 @@
         .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #334155; font-weight: bold; color: white; }
         .suggestion-item:hover { background-color: #3b82f6; }
 
-        /* Yeni 3+2 Tasarım Stilleri */
+        /* 3+2 Tasarım Stilleri */
         .guess-card { border: 2px solid #333; border-radius: 15px; padding: 15px; margin: 10px auto; background: #fff; width: 450px; color: #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .guess-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
         .box { border: 2px solid #333; border-radius: 10px; padding: 10px; text-align: center; font-weight: bold; font-size: 13px; }
@@ -30,12 +30,13 @@
 </head>
 <body>
 
+    <h1 style="margin-bottom: 20px;">Ülketahmin</h1>
+
     <div class="controls">
-        <input type="text" id="countryInput" placeholder="Ülke adı yaz..." autocomplete="off">
+        <input type="text" id="countryInput" placeholder="Bir ülke yazın..." autocomplete="off">
         <div id="suggestions" class="suggestions-box"></div>
     </div>
     
-    <!-- 3. adım burası: Eski grid-layout'u ve içindeki her şeyi sildik, sadece id verdik -->
     <div id="gameGrid"></div>
 
     <script>
@@ -49,7 +50,7 @@
         .then(data => {
             countryDB = data;
             target = countryDB[Math.floor(Math.random() * countryDB.length)];
-            console.log("Hedef:", target.ad);
+            console.log("Hedef ülke:", target.ad);
         });
 
     input.addEventListener('input', function() {
